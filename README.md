@@ -36,4 +36,4 @@ Best regards,
 
 Stef C.
 
-[![Video Demo](https://example.com/video_thumbnail.jpg)]((https://www.loom.com/share/1fec34d99d294227ada5b69ed4ca2e42))
+[![DoughRise Video Demo]()]((https://www.loom.com/share/1fec34d99d294227ada5b69ed4ca2e42))
