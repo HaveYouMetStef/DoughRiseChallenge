@@ -9,7 +9,9 @@ import Foundation
 
 struct Budget {
     let id: UUID
-    var amount: Double
+    let amount: Double
+    var availableAmount: Double
+    
 }
 
 struct Transaction: Equatable {

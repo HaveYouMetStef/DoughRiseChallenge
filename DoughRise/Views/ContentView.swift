@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var budget = Budget(id: UUID(), amount: 2000)
+    @State private var budget = Budget(id: UUID(), amount: 2000, availableAmount: 2000)
     @State private var transactions: [Transaction] = []
     @State private var isPresentingAddTransaction = false
     @State private var selectedTab = 0
@@ -39,68 +39,103 @@ struct ContentView: View {
                     RadialGradient(stops: [
                         .init(color: Color(red: 0.39, green: 0.21, blue: 0.59), location: 0.3),
                         .init(color: Color(red: 1.0, green: 1.0, blue: 1.0), location: 0.3)],
-                                   center: .top, startRadius: 200, endRadius: 700)
+                                   center: .top, startRadius: 200, endRadius: 300)
                         .ignoresSafeArea()
                     
                     VStack(alignment: .leading) {
                         Spacer()
                         
                         HStack {
+                            Spacer()
+                                .frame(width: 25.0)
                             Text("Monthly Budget")
-                                .font(.title)
+//                                .font(.title)
                                 .fontWeight(.heavy)
                                 .foregroundColor(.white)
+                                
+                                
                             Image(systemName: "chevron.down")
-                                .resizable()
+//                                .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 30, height: 30)
                                 .foregroundColor(.white)
+                            
+                            Spacer()
+                                .frame(width: 120.0)
+                            Image(systemName: "point.3.connected.trianglepath.dotted")
+                                .foregroundColor(.white)
+                                .rotationEffect(.degrees(90))
+                            Spacer()
+                                .frame(width: 18)
+                            Image(systemName: "ellipsis")
+                                .rotationEffect(.degrees(90.0))
+                                .foregroundColor(.white)
                         }
-                        Spacer()
-                        Spacer()
-                        Spacer()
-                        
-                        VStack {
-                            Text(dateFormatter.string(from: currentDate))
-                                .font(.title)
-                                .foregroundColor(.green)
+
+                        List {
+                            Button(action:  {
+                                isPresentingDatePicker = true
+                            }) {
+                                Text(dateFormatter.string(from: currentDate))
+
+                                    .foregroundColor(.green)
+                                    .frame(width: 100)
+                                    .background(Color.green.opacity(0.15))
+                                    .cornerRadius(10)
+                            }
+                            .frame(maxWidth: .infinity, alignment:.center)
+                            .sheet(isPresented: $isPresentingDatePicker) {
+                                DatePicker("Select Month/ Year", selection: $currentDate, displayedComponents: [.date])
+                                    .datePickerStyle(.compact)
+                                    .labelsHidden()
+                                    
+                            }
+
+                            
                             
                             HStack {
-                                Spacer()
-                                Text("Spent: $\(String(format: "%.0f", budget.amount - availableAmount))")
+                                
+                                Text("Spent\n $\(String(format: "%.0f", budget.amount - availableAmount))")
                                     .font(.body)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.gray)
+                                    
                                 
                                 Spacer()
                                 
-                                Text("Available: $\(String(format: "%.0f", availableAmount))")
+                                Text("Available\n $\(String(format: "%.0f", availableAmount))")
                                     .font(.body)
                                     .foregroundColor(.green)
+                                    .fontWeight(.bold)
                                 
                                 Spacer()
                                 
-                                Text("Budget: $2,000")
+                                Text("Budget\n $\(String(format: "%.0f", budget.amount ))")
                                     .font(.body)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.gray)
                             }
                             HStack {
                                 Spacer()
+                                    .padding(10)
                                 
                                 ProgressView(value: budgetUtilization)
-                                    .accentColor(.white)
-                                    .frame(width: 200, height: 10)
-                                    .scaleEffect(1.8)
+                                    .accentColor(.purple)
+                                    .frame(maxWidth: .infinity, maxHeight: 10)
+                                    .padding(.horizontal)
+                                    .scaleEffect(5.1)                                
                                 
                                 Spacer()
+                                    .padding(10)
+                                    
                             }
                             .foregroundColor(.primary)
                             
-                            Spacer()
                         }
-                        
-                        Form {
+                        List {
                             ForEach(transactions, id: \.id) { transaction in
                                 HStack {
                                     transactionTypeImage(for: transaction.type)
-                                        .foregroundColor(.purple)
                                     
                                     VStack(alignment: .leading) {
                                         Text("Spent: $\(transaction.amount, specifier: "%.0f") of $\(transaction.totalAmount, specifier: "%.0f")")
@@ -111,6 +146,7 @@ struct ContentView: View {
                                 }
                             }
                         }
+                        
                         
                         Spacer()
                         
@@ -182,7 +218,7 @@ struct ContentView: View {
     func updateBudgetValues() {
         let spentAmount = transactions.reduce(0.0) { $0 + $1.amount }
         let initialBudget = 2000.0
-        budget.amount = Double(initialBudget) - spentAmount
+        budget.availableAmount = Double(initialBudget) - spentAmount
     }
     
     // Add a new transaction to the list
