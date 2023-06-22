@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    // State properties
     @State private var budget = Budget(id: UUID(), amount: 2000, availableAmount: 2000)
     @State private var transactions: [Transaction] = []
     @State private var isPresentingAddTransaction = false
@@ -36,26 +37,24 @@ struct ContentView: View {
         NavigationView {
             TabView(selection: $selectedTab) {
                 ZStack {
+                    // Background gradient
                     RadialGradient(stops: [
                         .init(color: Color(red: 0.39, green: 0.21, blue: 0.59), location: 0.3),
                         .init(color: Color(red: 1.0, green: 1.0, blue: 1.0), location: 0.3)],
-                                   center: .top, startRadius: 200, endRadius: 300)
+                        center: .top, startRadius: 200, endRadius: 400)
                         .ignoresSafeArea()
                     
-                    VStack(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 20) {
                         Spacer()
                         
                         HStack {
                             Spacer()
                                 .frame(width: 25.0)
                             Text("Monthly Budget")
-//                                .font(.title)
                                 .fontWeight(.heavy)
                                 .foregroundColor(.white)
                                 
-                                
                             Image(systemName: "chevron.down")
-//                                .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 30, height: 30)
                                 .foregroundColor(.white)
@@ -72,42 +71,61 @@ struct ContentView: View {
                                 .foregroundColor(.white)
                         }
 
+                        // Content views inside the list
                         List {
+                            // Date picker button
                             Button(action:  {
                                 isPresentingDatePicker = true
                             }) {
                                 Text(dateFormatter.string(from: currentDate))
-
                                     .foregroundColor(.green)
                                     .frame(width: 100)
                                     .background(Color.green.opacity(0.15))
                                     .cornerRadius(10)
                             }
-                            .frame(maxWidth: .infinity, alignment:.center)
+                            .frame(maxWidth: .maximum(400, 400), alignment:.center)
                             .sheet(isPresented: $isPresentingDatePicker) {
                                 DatePicker("Select Month/ Year", selection: $currentDate, displayedComponents: [.date])
                                     .datePickerStyle(.compact)
                                     .labelsHidden()
-                                    
                             }
-
                             
-                            
-                            HStack {
-                                
+                            // Spent, Available, and Budget amounts
+                            HStack(alignment: .center) {
+                                Spacer()
                                 Text("Spent\n $\(String(format: "%.0f", budget.amount - availableAmount))")
                                     .font(.body)
                                     .fontWeight(.bold)
                                     .foregroundColor(.gray)
-                                    
                                 
                                 Spacer()
                                 
-                                Text("Available\n $\(String(format: "%.0f", availableAmount))")
+                                Text("|")
                                     .font(.body)
-                                    .foregroundColor(.green)
                                     .fontWeight(.bold)
+                                    .foregroundColor(.gray)
+                                    .frame(width: 10)
+                                    .scaleEffect(x:1.0, y: 2.5)
+                                Spacer()
                                 
+                                Text("Available")
+                                    .font(.body)
+                                    .foregroundColor(.gray)
+                                    .fontWeight(.bold) +
+                                
+                                Text("\n $\(String(format: "%.0f", availableAmount))")
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.green)
+                                
+                                Spacer()
+                                
+                                Text("|")
+                                    .font(.body)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.gray)
+                                    .frame(width: 10)
+                                    .frame(width: 10)
+                                    .scaleEffect(x:1.0, y: 2.5)
                                 Spacer()
                                 
                                 Text("Budget\n $\(String(format: "%.0f", budget.amount ))")
@@ -115,6 +133,8 @@ struct ContentView: View {
                                     .fontWeight(.bold)
                                     .foregroundColor(.gray)
                             }
+                            
+                            // Budget utilization progress bar
                             HStack {
                                 Spacer()
                                     .padding(10)
@@ -122,34 +142,80 @@ struct ContentView: View {
                                 ProgressView(value: budgetUtilization)
                                     .accentColor(.purple)
                                     .frame(maxWidth: .infinity, maxHeight: 10)
-                                    .padding(.horizontal)
-                                    .scaleEffect(5.1)                                
+                                    .padding(.horizontal,4)
+                                    .padding()
+                                    .scaleEffect(5.1)
+                                    .frame(alignment: .center)
                                 
                                 Spacer()
                                     .padding(10)
-                                    
                             }
                             .foregroundColor(.primary)
                             
-                        }
-                        List {
-                            ForEach(transactions, id: \.id) { transaction in
-                                HStack {
-                                    transactionTypeImage(for: transaction.type)
-                                    
+                            // Transactions list
+                            List {
+                                ForEach(transactions, id: \.id) { transaction in
                                     VStack(alignment: .leading) {
-                                        Text("Spent: $\(transaction.amount, specifier: "%.0f") of $\(transaction.totalAmount, specifier: "%.0f")")
+                                        HStack(spacing: 13) {
+                                            transactionTypeImage(for: transaction.type)
+                                                .frame(width: 10, height: 10)
+                                                .padding(.top, 1)
+                                                .foregroundColor(.purple)
+                                            
+                                            VStack(alignment: .leading) {
+                                                HStack {
+                                                    Text(transaction.type)
+                                                        .fontWeight(.bold)
+                                                    
+                                                    Spacer()
+                                                    
+                                                    let remainingAmount = transaction.totalAmount - transaction.amount
+                                                    
+                                                    VStack(alignment: .leading) {
+                                                        Text("$\(remainingAmount, specifier: "%.0f")")
+                                                            .foregroundColor(remainingAmount >= 0 ? .green : .red)
+                                                            .padding(.leading, 10)
+                                                            .fontWeight(.bold)
+                                                    }
+                                                }
+                                                .padding(.leading, 1)
+                                                
+                                                HStack {
+                                                    Text("spent")
+                                                        .foregroundColor(.primary)
+                                                        .fontWeight(.light)
+                                                    
+                                                    Text("$\(transaction.amount, specifier: "%.0f")")
+                                                        .foregroundColor(transaction.amount >= transaction.totalAmount ? .red : .green)
+                                                        .fontWeight(.light)
+                                                    
+                                                    Text("of $\(transaction.totalAmount, specifier: "%.0f")")
+                                                        .foregroundColor(.primary)
+                                                        .fontWeight(.light)
+                                                    
+                                                    Spacer()
+                                                    
+                                                    Text("left")
+                                                        .foregroundColor(.primary)
+                                                        .fontWeight(.light)
+                                                }
+                                            }
+                                        }
+                                        
                                         ProgressView(value: transaction.amount / transaction.totalAmount)
                                             .accentColor(.purple)
                                             .frame(height: 10)
+                                            .padding(.horizontal, 1) // Adjust horizontal padding here to span the entire width
                                     }
                                 }
                             }
+                            .frame(height: 400)
                         }
+                        .listStyle(.plain)
+                        .background(Color.clear)
+                        .cornerRadius(100.0)
                         
-                        
-                        Spacer()
-                        
+                        // Add transaction button
                         Button(action: {
                             // Open a modal to add a new transaction
                             isPresentingAddTransaction = true
